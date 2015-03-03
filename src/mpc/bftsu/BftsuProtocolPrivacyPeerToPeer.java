@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with SEPIA.  If not, see <http://www.gnu.org/licenses/>.
 
-package mpc.bfwsi;
+package mpc.bftsu;
 
 import java.util.logging.Level;
 
@@ -22,15 +22,15 @@ import services.Utils;
 import connections.PrivacyViolationException;
 
 /**
- * Protocol between a privacy peer and a peer for the bfwsi protocol.
+ * Protocol between a privacy peer and a peer for the bftsu protocol.
  *
  * @author Dilip Many
  *
  */
-public class BfwsiProtocolPrivacyPeerToPeer extends BfwsiProtocol {
+public class BftsuProtocolPrivacyPeerToPeer extends BftsuProtocol {
 
-	/** reference to bfwsi privacy peer object that started this protocol instance */
-	protected BfwsiPrivacyPeer privacyPeer;
+	/** reference to bftsu privacy peer object that started this protocol instance */
+	protected BftsuPrivacyPeer privacyPeer;
 
 
 	/**
@@ -45,14 +45,14 @@ public class BfwsiProtocolPrivacyPeerToPeer extends BfwsiProtocol {
 	 * @param stopper					Stopper to stop protocol thread
 	 * @throws Exception
 	 */
-	public BfwsiProtocolPrivacyPeerToPeer(int threadNumber, BfwsiPrivacyPeer privacyPeer, String inputPeerId, int inputPeerIndex, Stopper stopper)  {
+	public BftsuProtocolPrivacyPeerToPeer(int threadNumber, BftsuPrivacyPeer privacyPeer, String inputPeerId, int inputPeerIndex, Stopper stopper)  {
 		super(threadNumber, privacyPeer, inputPeerId, inputPeerIndex, stopper);
 		this.privacyPeer = privacyPeer;
 	}
 
 
 	/**
-	 * Run the MPC bfwsi computation protocol for the peer.
+	 * Run the MPC bftsu computation protocol for the peer.
 	 */
 	public void run() {
 		initialize(privacyPeer.getTimeSlotCount(), privacyPeer.getNumberOfItems(), privacyPeer.getNumberOfInputPeers());
@@ -91,7 +91,7 @@ public class BfwsiProtocolPrivacyPeerToPeer extends BfwsiProtocol {
 	 */
 	protected void sendFinalResult() throws PrivacyViolationException {
 		// create message
-		messageToSend = new BfwsiMessage(myPeerID, myPeerIndex);
+		messageToSend = new BftsuMessage(myPeerID, myPeerIndex);
 		messageToSend.setIsFinalResultMessage(true);
 		messageToSend.setResults(privacyPeer.getFinalResult());
 		logger.log(Level.INFO, "I am about to send the final result...");

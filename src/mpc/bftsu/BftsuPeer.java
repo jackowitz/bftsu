@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with SEPIA.  If not, see <http://www.gnu.org/licenses/>.
 
-package mpc.bfwsi;
+package mpc.bftsu;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -37,15 +37,15 @@ import connections.ConnectionManager;
 import events.FinalResultEvent;
 
 /**
- * A MPC peer providing the private input data for the bfwsi protocol
+ * A MPC peer providing the private input data for the bftsu protocol
  *
  * @author Dilip Many, Manuel Widmer
  *
  */
-public class BfwsiPeer extends BfwsiBase {
+public class BftsuPeer extends BftsuBase {
 
 	/** vector of protocols (between this peer and the privacy peers) */
-	private Vector<BfwsiProtocolPeer> peerProtocolThreads = null;
+	private Vector<BftsuProtocolPeer> peerProtocolThreads = null;
 	/** MpcShamirSharing instance to use basic operations on Shamir shares */
 	protected ShamirSharing mpcShamirSharing = null;
 
@@ -61,16 +61,16 @@ public class BfwsiPeer extends BfwsiBase {
 	private File currentInputFile;
 
 	/**
-	 * constructs a new bfwsi peer object
+	 * constructs a new bftsu peer object
 	 *
 	 * @param myPeerIndex	This peer's number/index
 	 * @param stopper		Stopper (can be used to stop this thread)
 	 * @param cm the connection manager
 	 * @throws Exception
 	 */
-	public BfwsiPeer(int myPeerIndex, ConnectionManager cm, Stopper stopper) throws Exception {
+	public BftsuPeer(int myPeerIndex, ConnectionManager cm, Stopper stopper) throws Exception {
 		super(myPeerIndex, cm, stopper);
-		peerProtocolThreads = new Vector<BfwsiProtocolPeer>();
+		peerProtocolThreads = new Vector<BftsuProtocolPeer>();
 		mpcShamirSharing = new ShamirSharing();
 	}
 
@@ -137,10 +137,10 @@ public class BfwsiPeer extends BfwsiBase {
 		int currentID = 0;
 		for(String ppId: privacyPeerIDs) {
 			logger.log(Level.INFO, "Create a thread for privacy peer " +ppId );
-			BfwsiProtocolPeer bfwsiProtocolPeer = new BfwsiProtocolPeer(currentID, this, ppId, currentID, stopper);
-			bfwsiProtocolPeer.addObserver(this);
-			Thread thread = new Thread(bfwsiProtocolPeer, "Bfwsi Peer protocol with user number " + currentID);
-			peerProtocolThreads.add(bfwsiProtocolPeer);
+			BftsuProtocolPeer bftsuProtocolPeer = new BftsuProtocolPeer(currentID, this, ppId, currentID, stopper);
+			bftsuProtocolPeer.addObserver(this);
+			Thread thread = new Thread(bftsuProtocolPeer, "Bftsu Peer protocol with user number " + currentID);
+			peerProtocolThreads.add(bftsuProtocolPeer);
 			thread.start();
 			currentID++;
 		}
@@ -223,28 +223,28 @@ public class BfwsiPeer extends BfwsiBase {
 	 * @param object		The object that was sent by the observable
 	 */
 	protected void notificationReceived(Observable observable, Object object) throws Exception {
-		if (object instanceof BfwsiMessage) {
+		if (object instanceof BftsuMessage) {
 			// We are awaiting a final results message				
-			BfwsiMessage bfwsiMessage = (BfwsiMessage) object;
+			BftsuMessage bftsuMessage = (BftsuMessage) object;
 
-			if(bfwsiMessage.isDummyMessage()) {
+			if(bftsuMessage.isDummyMessage()) {
 				// Simulate a final results message in order not to stop protocol execution
-				bfwsiMessage.setIsFinalResultMessage(true);
+				bftsuMessage.setIsFinalResultMessage(true);
 			}
 			
-			if(bfwsiMessage.isFinalResultMessage()) {
+			if(bftsuMessage.isFinalResultMessage()) {
 				logger.log(Level.INFO, "Received a final result message from a privacy peer");
 				finalResultsToDo--;
 
-				if (finalResults == null && bfwsiMessage.getResults() != null) {
-					finalResults = bfwsiMessage.getResults();
+				if (finalResults == null && bftsuMessage.getResults() != null) {
+					finalResults = bftsuMessage.getResults();
 				}
 				
 				if(finalResultsToDo <= 0) {
 					// notify observers about final result
 					logger.log(Level.INFO, Services.getFilterPassingLogPrefix()+ "Received all final results. Notifying observers...");
 					VectorData dummy = new VectorData(); // dummy data to avoid null pointer exception in Peers::processMpcEvent
-					FinalResultEvent finalResultEvent = new FinalResultEvent(this, myAlphaIndex, getMyPeerID(), bfwsiMessage.getSenderID(), dummy);
+					FinalResultEvent finalResultEvent = new FinalResultEvent(this, myAlphaIndex, getMyPeerID(), bftsuMessage.getSenderID(), dummy);
 					finalResultEvent.setVerificationSuccessful(true);
 					sendNotification(finalResultEvent);
 
@@ -261,15 +261,15 @@ public class BfwsiPeer extends BfwsiBase {
 				}
 			} else {
 				String errorMessage = "Didn't receive final result...";
-				errorMessage += "\nisGoodBye: "+bfwsiMessage.isGoodbyeMessage();  
-				errorMessage += "\nisHello: "+bfwsiMessage.isHelloMessage();
-				errorMessage += "\nisInitialShares: "+bfwsiMessage.isInitialSharesMessage();
-				errorMessage += "\nisFinalResult: "+bfwsiMessage.isFinalResultMessage();
+				errorMessage += "\nisGoodBye: "+bftsuMessage.isGoodbyeMessage();  
+				errorMessage += "\nisHello: "+bftsuMessage.isHelloMessage();
+				errorMessage += "\nisInitialShares: "+bftsuMessage.isInitialSharesMessage();
+				errorMessage += "\nisFinalResult: "+bftsuMessage.isFinalResultMessage();
 				logger.log(Level.SEVERE, errorMessage);
 				sendExceptionEvent(this, errorMessage);
 			}
 		} else {
-			throw new Exception("Received unexpected message type (expected: " + BfwsiMessage.class.getName() + ", received: " + object.getClass().getName());
+			throw new Exception("Received unexpected message type (expected: " + BftsuMessage.class.getName() + ", received: " + object.getClass().getName());
 		}
 	}
 
@@ -286,7 +286,7 @@ public class BfwsiPeer extends BfwsiBase {
 		//logger.log(Level.SEVERE,"final: "+bf.toString());
 		//logger.log(Level.SEVERE, "finalResults.length: "+finalResults.length);
 
-		String fileName = outputFolder + "/bfwsi_" + String.valueOf(getMyPeerID()).replace(":", "_") + "_round" 
+		String fileName = outputFolder + "/bftsu_" + String.valueOf(getMyPeerID()).replace(":", "_") + "_round" 
 			+ currentTimeSlot + ".csv";
 		//bf.writeToFile(fileName);
 

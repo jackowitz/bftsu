@@ -13,16 +13,16 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with SEPIA.  If not, see <http://www.gnu.org/licenses/>.
 
-package mpc.bfwsi;
+package mpc.bftsu;
 
 
 /**
- * stores information about a bfwsi (privacy) peer
+ * stores information about a bftsu (privacy) peer
  * 
  * @author Dilip Many
  *
  */
-public class BfwsiPeerInfo {
+public class BftsuPeerInfo {
 
 	private String ID;
 	private int index;
@@ -34,9 +34,9 @@ public class BfwsiPeerInfo {
 	private long[] initialShares = null;
 
 	/**
-	 * Creates a new bfwsi info object
+	 * Creates a new bftsu info object
 	 */
-	public BfwsiPeerInfo(String ID, int index) {
+	public BftsuPeerInfo(String ID, int index) {
 		this.ID = ID;
 		this.index = index;
 	}

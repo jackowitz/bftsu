@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with SEPIA.  If not, see <http://www.gnu.org/licenses/>.
 
-package mpc.bfwsi;
+package mpc.bftsu;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
@@ -25,20 +25,20 @@ import services.Utils;
 import connections.PrivacyViolationException;
 
 /**
- * Protocol between a privacy peer and another privacy peer for the bfwsi protocol.
+ * Protocol between a privacy peer and another privacy peer for the bftsu protocol.
  *
  * @author Dilip Many, Manuel Widmer
  *
  */
-public class BfwsiProtocolPrivacyPeerToPP extends BfwsiProtocol {
+public class BftsuProtocolPrivacyPeerToPP extends BftsuProtocol {
 
-	/** reference to bfwsi privacy peer object that started this protocol instance */
-	protected BfwsiPrivacyPeer privacyPeer;
+	/** reference to bftsu privacy peer object that started this protocol instance */
+	protected BftsuPrivacyPeer privacyPeer;
 
 
 
 	/**
-	 * Creates a new instance of the bfwsi protocol between two privacy peers.
+	 * Creates a new instance of the bftsu protocol between two privacy peers.
 	 *
 	 * @param threadNumber				Protocol's thread number
 	 * @param privacyPeer		the privacy peer instantiating this thread
@@ -48,14 +48,14 @@ public class BfwsiProtocolPrivacyPeerToPP extends BfwsiProtocol {
 	 * @throws Exception
 	 */
 	
-	public BfwsiProtocolPrivacyPeerToPP(int threadNumber, BfwsiPrivacyPeer privacyPeer, String privacyPeerID, int privacyPeerIndex, Stopper stopper) {
+	public BftsuProtocolPrivacyPeerToPP(int threadNumber, BftsuPrivacyPeer privacyPeer, String privacyPeerID, int privacyPeerIndex, Stopper stopper) {
 		super(threadNumber, privacyPeer, privacyPeerID, privacyPeerIndex, stopper);
 		this.privacyPeer = privacyPeer;
 	}
 
 
 	/**
-	 * Run the MPC bfwsi protocol for the privacy peer
+	 * Run the MPC bftsu protocol for the privacy peer
 	 */
 	public synchronized void run() {
 		initialize(privacyPeer.getTimeSlotCount(), privacyPeer.getNumberOfItems(), privacyPeer.getNumberOfInputPeers());
@@ -74,13 +74,13 @@ public class BfwsiProtocolPrivacyPeerToPP extends BfwsiProtocol {
 			 * enter doOperations() and process the operations in parallel.
 			 */
 			if (ppThreadsBarrier.await()==0) {
-				// compute bfwsi
-				privacyPeer.startBfwsi();
+				// compute bftsu
+				privacyPeer.startBftsu();
 			}
 			
 			ppThreadsBarrier.await();
 			if(!doOperations()) {
-				logger.severe("Computing bfwsi failed; returning...");
+				logger.severe("Computing bftsu failed; returning...");
 				return;
 			}
 			
@@ -97,7 +97,7 @@ public class BfwsiProtocolPrivacyPeerToPP extends BfwsiProtocol {
 			
 			if (ppThreadsBarrier.await()==0) {
 				privacyPeer.setFinalResult();
-				logger.log(Level.INFO, "Bfwsi protocol round completed");
+				logger.log(Level.INFO, "Bftsu protocol round completed");
 			}
 		} catch (PrimitivesException e) {
 			logger.severe(Utils.getStackTrace(e));

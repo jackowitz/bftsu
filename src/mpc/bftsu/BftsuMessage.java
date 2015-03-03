@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with SEPIA.  If not, see <http://www.gnu.org/licenses/>.
 
-package mpc.bfwsi;
+package mpc.bftsu;
 
 import java.io.Serializable;
 
@@ -21,12 +21,12 @@ import mpc.MessageBase;
 
 
 /**
- * message used to exchange data among (privacy) peers in the bfwsi protocol
+ * message used to exchange data among (privacy) peers in the bftsu protocol
  *
  * @author Dilip Many, Manuel Widmer
  *
  */
-public class BfwsiMessage extends MessageBase implements Serializable {
+public class BftsuMessage extends MessageBase implements Serializable {
 	private static final long serialVersionUID = 3461683923455914692L;
 
 	/**
@@ -44,12 +44,12 @@ public class BfwsiMessage extends MessageBase implements Serializable {
 
 
 	/**
-	 * creates a new bfwsi protocol message with the specified sender id and index
+	 * creates a new bftsu protocol message with the specified sender id and index
 	 *
 	 * @param senderID		the senders id
 	 * @param senderIndex	the senders index
 	 */
-	public BfwsiMessage(String senderID, int senderIndex) {
+	public BftsuMessage(String senderID, int senderIndex) {
 		super(senderID, senderIndex);
 	}
 

@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with SEPIA.  If not, see <http://www.gnu.org/licenses/>.
 
-package mpc.bfwsi;
+package mpc.bftsu;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,21 +34,21 @@ import connections.ConnectionManager;
 import events.FinalResultEvent;
 
 /**
- * A MPC privacy peer with the computation capabilities for the bfwsi protocol
+ * A MPC privacy peer with the computation capabilities for the bftsu protocol
  * 
  * @author Dilip Many, Manuel Widmer
  *
  */
-public class BfwsiPrivacyPeer extends BfwsiBase {
+public class BftsuPrivacyPeer extends BftsuBase {
 
 	/** vector of protocols (between this privacy peer and the peers) */
-	private Vector<BfwsiProtocolPrivacyPeerToPeer> peerProtocolThreads = null;
+	private Vector<BftsuProtocolPrivacyPeerToPeer> peerProtocolThreads = null;
 	/** vector of protocols (between this privacy peer and other privacy peers) */
-	private Vector<BfwsiProtocolPrivacyPeerToPP> ppToPPProtocolThreads = null;
+	private Vector<BftsuProtocolPrivacyPeerToPP> ppToPPProtocolThreads = null;
 	/** vector of information objects for the connected peers */
-	protected Vector<BfwsiPeerInfo> peerInfos = null;
+	protected Vector<BftsuPeerInfo> peerInfos = null;
 	/** vector of information objects for the connected privacy peers */
-	protected Vector<BfwsiPeerInfo> privacyPeerInfos = null;
+	protected Vector<BftsuPeerInfo> privacyPeerInfos = null;
 	/** barrier to synchronize the peerProtocolThreads threads */
 	private CountingBarrier peerProtocolBarrier = null;
 	/** barrier to synchronize the ppToPPProtocolThreads threads */
@@ -60,20 +60,20 @@ public class BfwsiPrivacyPeer extends BfwsiBase {
 	private int initialSharesToReceive = 0;
 
 	/**
-	 * creates a new MPC bfwsi privacy peer
+	 * creates a new MPC bftsu privacy peer
 	 *
 	 * @param myPeerIndex	This peer's number/index
 	 * @param stopper		Stopper (can be used to stop this thread)
 	 * @param cm 			the connection manager
 	 * @throws Exception
 	 */
-	public BfwsiPrivacyPeer(int myPeerIndex, ConnectionManager cm, Stopper stopper) throws Exception {
+	public BftsuPrivacyPeer(int myPeerIndex, ConnectionManager cm, Stopper stopper) throws Exception {
 		super(myPeerIndex, cm, stopper);
 
-		peerInfos = new Vector<BfwsiPeerInfo>();
-		privacyPeerInfos = new Vector<BfwsiPeerInfo>();
-		peerProtocolThreads = new Vector<BfwsiProtocolPrivacyPeerToPeer>();
-		ppToPPProtocolThreads = new Vector<BfwsiProtocolPrivacyPeerToPP>();
+		peerInfos = new Vector<BftsuPeerInfo>();
+		privacyPeerInfos = new Vector<BftsuPeerInfo>();
+		peerProtocolThreads = new Vector<BftsuProtocolPrivacyPeerToPeer>();
+		ppToPPProtocolThreads = new Vector<BftsuProtocolPrivacyPeerToPP>();
 	}
 
 	/**
@@ -149,12 +149,12 @@ public class BfwsiPrivacyPeer extends BfwsiBase {
 		for(String ppId: privacyPeerIDs) {
 			logger.log(Level.INFO, "Create a thread for privacy peer " +ppId );
 			int otherPPindex = ppIndexMap.get(ppId);
-			BfwsiProtocolPrivacyPeerToPP pp2pp = new BfwsiProtocolPrivacyPeerToPP(currentID, this, ppId, otherPPindex, stopper);
+			BftsuProtocolPrivacyPeerToPP pp2pp = new BftsuProtocolPrivacyPeerToPP(currentID, this, ppId, otherPPindex, stopper);
 			pp2pp.setMyPeerIndex(myAlphaIndex);
 			pp2pp.addObserver(this);
-			Thread thread = new Thread(pp2pp, "Bfwsi PP-to-PP protocol connected with " + ppId);
+			Thread thread = new Thread(pp2pp, "Bftsu PP-to-PP protocol connected with " + ppId);
 			ppToPPProtocolThreads.add(pp2pp);
-			privacyPeerInfos.add(currentID, new BfwsiPeerInfo(ppId, otherPPindex));
+			privacyPeerInfos.add(currentID, new BftsuPeerInfo(ppId, otherPPindex));
 			thread.start();
 			currentID++;
 		}
@@ -172,11 +172,11 @@ public class BfwsiPrivacyPeer extends BfwsiBase {
 		int currentID = 0;
 		for(String ipId: inputPeerIDs) {
 			logger.log(Level.INFO, "Create a thread for input peer " +ipId );
-			BfwsiProtocolPrivacyPeerToPeer pp2p = new BfwsiProtocolPrivacyPeerToPeer(currentID, this, ipId, currentID, stopper);
+			BftsuProtocolPrivacyPeerToPeer pp2p = new BftsuProtocolPrivacyPeerToPeer(currentID, this, ipId, currentID, stopper);
 			pp2p.addObserver(this);
-			Thread thread = new Thread(pp2p, "Bfwsi Peer protocol connected with " + ipId);
+			Thread thread = new Thread(pp2p, "Bftsu Peer protocol connected with " + ipId);
 			peerProtocolThreads.add(pp2p);
-			peerInfos.add(currentID, new BfwsiPeerInfo(ipId, currentID));
+			peerInfos.add(currentID, new BftsuPeerInfo(ipId, currentID));
 			thread.start();
 			currentID++;
 		}
@@ -197,8 +197,8 @@ public class BfwsiPrivacyPeer extends BfwsiBase {
 	 * @param object		The object that was sent by the observable
 	 */
 	protected void notificationReceived(Observable observable, Object object) throws Exception {
-		if (object instanceof BfwsiMessage) {
-			BfwsiMessage msg = (BfwsiMessage) object;
+		if (object instanceof BftsuMessage) {
+			BftsuMessage msg = (BftsuMessage) object;
 			// We are awaiting a message with initial shares 
 			if (msg.isDummyMessage()) {
 				// Counterpart is offline. Simulate an initial shares message.
@@ -207,7 +207,7 @@ public class BfwsiPrivacyPeer extends BfwsiBase {
 			
 			if (msg.isInitialSharesMessage()) {
 				logger.log(Level.INFO, "Received shares from peer: " + msg.getSenderID());
-				BfwsiPeerInfo peerInfo = getPeerInfoByPeerID(msg.getSenderID());
+				BftsuPeerInfo peerInfo = getPeerInfoByPeerID(msg.getSenderID());
 				peerInfo.setInitialShares(msg.getInitialShares());
 
 				initialSharesToReceive--;
@@ -226,7 +226,7 @@ public class BfwsiPrivacyPeer extends BfwsiBase {
 				sendExceptionEvent(this, errorMessage);
 			}
 		} else {
-			throw new Exception("Received unexpected message type (expected: " + BfwsiMessage.class.getName() + ", received: " + object.getClass().getName());
+			throw new Exception("Received unexpected message type (expected: " + BftsuMessage.class.getName() + ", received: " + object.getClass().getName());
 		}
 	}
 
@@ -264,7 +264,7 @@ public class BfwsiPrivacyPeer extends BfwsiBase {
 	 *
 	 * @return The privacy peers info instance (null if not found)
 	 */
-	protected synchronized BfwsiPeerInfo getPrivacyPeerInfoByIndex(int privacyPeerNumber) {
+	protected synchronized BftsuPeerInfo getPrivacyPeerInfoByIndex(int privacyPeerNumber) {
 		return privacyPeerInfos.elementAt(privacyPeerNumber);
 	}
 
@@ -278,7 +278,7 @@ public class BfwsiPrivacyPeer extends BfwsiBase {
 	 *
 	 * @return The input peers info instance (null if not found)
 	 */
-	protected synchronized BfwsiPeerInfo getPeerInfoByIndex(int peerNumber) {
+	protected synchronized BftsuPeerInfo getPeerInfoByIndex(int peerNumber) {
 		return peerInfos.elementAt(peerNumber);
 	}
 
@@ -290,8 +290,8 @@ public class BfwsiPrivacyPeer extends BfwsiBase {
 	 * 
 	 * @return The peers info instance (null if not found)
 	 */
-	protected synchronized BfwsiPeerInfo getPeerInfoByPeerID(String peerID) {
-		for (BfwsiPeerInfo peerInfo : peerInfos) {
+	protected synchronized BftsuPeerInfo getPeerInfoByPeerID(String peerID) {
+		for (BftsuPeerInfo peerInfo : peerInfos) {
 			if (peerInfo.getID() == null) {
 				logger.log(Level.WARNING, "There is a peerInfo without a peerID! " + peerInfo.getIndex());
 			}
@@ -359,7 +359,7 @@ public class BfwsiPrivacyPeer extends BfwsiBase {
 	 * starts the product computations
 	 */
 	public void startProductComputations() {
-		logger.log(Level.INFO, Services.getFilterPassingLogPrefix()+ "STARTING Bfwsi Protocol round...");
+		logger.log(Level.INFO, Services.getFilterPassingLogPrefix()+ "STARTING Bftsu Protocol round...");
 		int activeInputPeers = connectionManager.getNumberOfConnectedPeers(false, true);
 		// create product operation set
 		initializeNewOperationSet(numberOfItems);
@@ -384,11 +384,11 @@ public class BfwsiPrivacyPeer extends BfwsiBase {
 	/**
 	 * computes the function on the received shares
 	 */
-	public void startBfwsi() {
-		logger.log(Level.INFO, Services.getFilterPassingLogPrefix()+ "STARTING Bfwsi Protocol round...");
+	public void startBftsu() {
+		logger.log(Level.INFO, Services.getFilterPassingLogPrefix()+ "STARTING Bftsu Protocol round...");
 		int activeInputPeers = connectionManager.getNumberOfConnectedPeers(false, true);
 		
-		//create bfwsi operation set
+		//create bftsu operation set
 		initializeNewOperationSet(1);
 		operationIDs = new int[1];
 		operationIDs[0] = 0;
@@ -403,10 +403,10 @@ public class BfwsiPrivacyPeer extends BfwsiBase {
 				dataIndex++;
 			}
 		}
-		if(!primitives.bfThresholdUnion(operationIDs[0], data, keyThreshold, learnWeights)) {
-			Services.printVector("SEVERE: bfBfwsi operation arguments are invalid: id=0; data: ", data[0], logger);
+		if(!primitives.bfThresholdUnion(operationIDs[0], data, threshold, learnWeights)) {
+			Services.printVector("SEVERE: bfBftsu operation arguments are invalid: id=0; data: ", data[0], logger);
 		}
-		logger.log(Level.INFO, "thread " + Thread.currentThread().getId() + " started the "+operationIDs.length+" bfwsi operations...");
+		logger.log(Level.INFO, "thread " + Thread.currentThread().getId() + " started the "+operationIDs.length+" bftsu operations...");
 
 	}
 	
@@ -414,7 +414,7 @@ public class BfwsiPrivacyPeer extends BfwsiBase {
 	 * starts the reconstruction of the final result
 	 */
 	public void startFinalResultReconstruction() {
-		// get bfwsi operation result
+		// get bftsu operation result
 		long[] result = primitives.getResult(operationIDs[0]);
 
 		initializeNewOperationSet(result.length);

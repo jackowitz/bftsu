@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with SEPIA.  If not, see <http://www.gnu.org/licenses/>.
 
-package mpc.bfwsi;
+package mpc.bftsu;
 
 import java.util.Collections;
 import java.util.Observable;
@@ -32,12 +32,12 @@ import events.ExceptionEvent;
 
 /**
  * This abstract class contains the functionality common to peers and
- * privacy peers of the MPC Bfwsi protocol.
+ * privacy peers of the MPC Bftsu protocol.
  *
  * @author Dilip Many, Manuel Widmer
  *
  */
-public abstract class BfwsiBase extends PrimitivesEnabledPeer {
+public abstract class BftsuBase extends PrimitivesEnabledPeer {
 
 	protected String inputFolder;
 	protected String outputFolder;
@@ -64,29 +64,27 @@ public abstract class BfwsiBase extends PrimitivesEnabledPeer {
 	/** number of Items to Read from the input File */
 	protected int itemsToRead = 0;
 	
-	/** Thresholds for the weighted set intersection */
-	protected long keyThreshold = 0;
+	/** Thresholds for the threshold-set union */
+	protected long threshold = 0;
 	protected boolean learnWeights = false;
 
 	
-	/** prefix of all bfwsi protocol properties */
+	/** prefix of all bftsu protocol properties */
 	public static final String PROP_BLOOM_PREFIX = "bloomfilter.";
 	public static final String PROP_BLOOMF_NUM_OF_HASHES = PROP_BLOOM_PREFIX + "hashcount";
 	public static final String PROP_BLOOMF_SIZE = PROP_BLOOM_PREFIX + "size";
-	//public static final String PROP_BLOOMF_COUNTING = PROP_BLOOM_PREFIX + "iscounting";
 	
-	public static final String PROP_BFWSI_KEYTHRESHOLD = "mpc.bfwsi.keythreshold";
-	public static final String PROP_BFWSI_LEARNWEIGHTS = "mpc.bfwsi.learnweights";
+	public static final String PROP_BFTSU_THRESHOLD = "mpc.bftsu.threshold";
 	
 	
 	/**
-	 * Creates a new MPC bfwsi peer instance
+	 * Creates a new MPC bftsu peer instance
 	 * 
 	 * @param myPeerIndex	This peer's number/index
 	 * @param stopper		Stopper (can be used to stop this thread)
 	 * @param cm the connection manager
 	 */
-	public BfwsiBase(int myPeerIndex, ConnectionManager cm, Stopper stopper) {
+	public BftsuBase(int myPeerIndex, ConnectionManager cm, Stopper stopper) {
 		super(myPeerIndex, cm, stopper);
 		protocolStopper = new Stopper();
 	}
@@ -125,10 +123,8 @@ public abstract class BfwsiBase extends PrimitivesEnabledPeer {
 		itemsToRead = Integer.valueOf(properties.getProperty(ConfigFile.PROP_NUMBER_OF_ITEMS));
 		numberOfHashFunctions = Integer.valueOf(properties.getProperty(PROP_BLOOMF_NUM_OF_HASHES));
         bloomFilterSize = Integer.valueOf(properties.getProperty(PROP_BLOOMF_SIZE));
-//        bfIsCounting = Boolean.valueOf(properties.getProperty(PROP_BLOOMF_COUNTING));
         
-        keyThreshold = Long.valueOf(properties.getProperty(PROP_BFWSI_KEYTHRESHOLD));
-        learnWeights = Boolean.valueOf(properties.getProperty(PROP_BFWSI_LEARNWEIGHTS));
+        threshold = Long.valueOf(properties.getProperty(PROP_BFTSU_THRESHOLD));
       
 		
 		// output properties to log
@@ -145,7 +141,6 @@ public abstract class BfwsiBase extends PrimitivesEnabledPeer {
 		logger.log(Level.INFO, "Items to read: " + itemsToRead);
 		logger.log(Level.INFO, "Number of hashfunctions: " + numberOfHashFunctions);
 		logger.log(Level.INFO, "Bloom filter size: " + bloomFilterSize);
-//		logger.log(Level.INFO, "Bloom filter is counting: " + bfIsCounting);
 		
 	}
 
@@ -178,11 +173,11 @@ public abstract class BfwsiBase extends PrimitivesEnabledPeer {
 		logger.log(Level.INFO, "Received notification from observable: " + observable.getClass().getName() + " (object is of type: " + object.getClass().getName() + ")");
 
 		try {
-			/* !!! WATCH OUT FOR ORDER (e.g. BfwsiMessage will go for
+			/* !!! WATCH OUT FOR ORDER (e.g. BftsuMessage will go for
 			 * !!! MpcMessage, too, since it is subclassing it!) -> always check
 			 * !!! subclasses first
 			 */
-			if (object instanceof BfwsiMessage) {
+			if (object instanceof BftsuMessage) {
 				notificationReceived(observable, object);
 
 			} else if (object instanceof ExceptionEvent) {

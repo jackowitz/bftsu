@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with SEPIA.  If not, see <http://www.gnu.org/licenses/>.
 
-package mpc.bfwsi;
+package mpc.bftsu;
 
 import java.util.logging.Level;
 
@@ -22,56 +22,56 @@ import services.Stopper;
 import connections.PrivacyViolationException;
 
 /**
- * common functionalities for all bfwsi protocol classes
+ * common functionalities for all bftsu protocol classes
  *
  * @author Dilip Many
  *
  */
-public abstract class BfwsiProtocol extends PrimitivesEnabledProtocol implements Runnable {
+public abstract class BftsuProtocol extends PrimitivesEnabledProtocol implements Runnable {
 
 	/** holds the message to be sent over the connection */
-	protected BfwsiMessage messageToSend;
+	protected BftsuMessage messageToSend;
 	/** hold the last received message */
-	protected BfwsiMessage messageReceived;
-	/** defines the string which precedes a bfwsi protocol message */
-	protected static String BFWSI_MESSAGE = "BFWSI_MESSAGE";
+	protected BftsuMessage messageReceived;
+	/** defines the string which precedes a bftsu protocol message */
+	protected static String BFTSU_MESSAGE = "BFTSU_MESSAGE";
 
 
 	/**
 	 * creates a new protocol instance
 	 *
 	 * @param threadNumber	This peer's thread number (for identification when notifying observers)
-	 * @param bfwsiPeer	(Privacy) Peer who started the protocol
+	 * @param bftsuPeer	(Privacy) Peer who started the protocol
 	 * @param otherPeerID   the other peer's ID
 	 * @param stopper		Can be used to stop a running protocol thread
 	 */
-	public BfwsiProtocol(int threadNumber, BfwsiBase bfwsiPeer, String otherPeerID, int otherPeerIndex, Stopper stopper) {
-		super(threadNumber, bfwsiPeer.getConnectionManager(), bfwsiPeer.getMyPeerID(), otherPeerID, bfwsiPeer.getMyPeerIndex(), otherPeerIndex, stopper);
+	public BftsuProtocol(int threadNumber, BftsuBase bftsuPeer, String otherPeerID, int otherPeerIndex, Stopper stopper) {
+		super(threadNumber, bftsuPeer.getConnectionManager(), bftsuPeer.getMyPeerID(), otherPeerID, bftsuPeer.getMyPeerIndex(), otherPeerIndex, stopper);
 
-		initializeProtocolPrimitives(bfwsiPeer);
+		initializeProtocolPrimitives(bftsuPeer);
 	}
 
 
 	/**
-	 * Sends a bfwsi message over the connection.
+	 * Sends a bftsu message over the connection.
 	 * @throws PrivacyViolationException 
 	 */
 	protected void sendMessage() throws PrivacyViolationException {
-		logger.log(Level.INFO, "Sending bfwsi message (to " + otherPeerID + ")...");
-		connectionManager.sendMessage(otherPeerID, BFWSI_MESSAGE);
+		logger.log(Level.INFO, "Sending bftsu message (to " + otherPeerID + ")...");
+		connectionManager.sendMessage(otherPeerID, BFTSU_MESSAGE);
 		connectionManager.sendMessage(otherPeerID, messageToSend);
 	}
 
 
 	/**
-	 * Receives a bfwsi message over the connection.
+	 * Receives a bftsu message over the connection.
 	 * (the received message is stored in the messageReceived variable)
 	 * @throws PrivacyViolationException 
 	 */
 	protected void receiveMessage() throws PrivacyViolationException {
-		logger.log(Level.INFO, "Waiting for bfwsi message to arrive ( from " + otherPeerID + ")...");
+		logger.log(Level.INFO, "Waiting for bftsu message to arrive ( from " + otherPeerID + ")...");
 		String messageType = (String) connectionManager.receiveMessage(otherPeerID);
-		messageReceived = (BfwsiMessage) connectionManager.receiveMessage(otherPeerID);
+		messageReceived = (BftsuMessage) connectionManager.receiveMessage(otherPeerID);
 		
 		// If the input peer has disconnected, null is returned
 		if(messageType==null || messageReceived==null) {
@@ -79,16 +79,16 @@ public abstract class BfwsiProtocol extends PrimitivesEnabledProtocol implements
 			 * Even though the input peer has left, we need to notify our observers in order
 			 * not to block protocol execution. Use a dummy message. 
 			 */
-			messageReceived = new BfwsiMessage(otherPeerID, otherPeerIndex);
+			messageReceived = new BftsuMessage(otherPeerID, otherPeerIndex);
 			messageReceived.setIsDummyMessage(true);			
 			
 			logger.info("No connection to "+otherPeerID+". Notifying Observers with DUMMY message... ");
 			notify(messageReceived);
-		} else if (BFWSI_MESSAGE.equals(messageType)) {
+		} else if (BFTSU_MESSAGE.equals(messageType)) {
 			logger.info("Received " + messageType + " message type from "+otherPeerID+". Notifying Observers... ");
 			notify(messageReceived);
 		} else {
-			logger.log(Level.WARNING, "Received unexpected message type (expected: " + BFWSI_MESSAGE + ", received: " + messageType);
+			logger.log(Level.WARNING, "Received unexpected message type (expected: " + BFTSU_MESSAGE + ", received: " + messageType);
 		}
 	}
 

@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with SEPIA.  If not, see <http://www.gnu.org/licenses/>.
 
-package mpc.bfwsi;
+package mpc.bftsu;
 
 import java.util.logging.Level;
 
@@ -22,15 +22,15 @@ import services.Utils;
 import connections.PrivacyViolationException;
 
 /**
- * A Bfwsi protocol between a peer and a privacy peer.
+ * A Bftsu protocol between a peer and a privacy peer.
  *
  * @author Dilip Many
  *
  */
-public class BfwsiProtocolPeer extends BfwsiProtocol {
+public class BftsuProtocolPeer extends BftsuProtocol {
 
-	/** reference to the bfwsi peer object that started this protocol instance */
-	private BfwsiPeer inputPeer;
+	/** reference to the bftsu peer object that started this protocol instance */
+	private BftsuPeer inputPeer;
 	private int privacyPeerIndex;
 
 
@@ -43,7 +43,7 @@ public class BfwsiProtocolPeer extends BfwsiProtocol {
 	 * @param privacyPeerID		ID of the communication counterpart
 	 * @param stopper			Stopper to stop protocol thread
 	 */
-	public BfwsiProtocolPeer(int threadNumber, BfwsiPeer inputPeer, String privacyPeerID, int privacyPeerIndex, Stopper stopper) {
+	public BftsuProtocolPeer(int threadNumber, BftsuPeer inputPeer, String privacyPeerID, int privacyPeerIndex, Stopper stopper) {
 		super(threadNumber, inputPeer, privacyPeerID, privacyPeerIndex, stopper);
 		this.inputPeer = inputPeer;
 		this.privacyPeerIndex = privacyPeerIndex;
@@ -51,7 +51,7 @@ public class BfwsiProtocolPeer extends BfwsiProtocol {
 
 
 	/**
-     * Run the Bfwsi protocol for the peer
+     * Run the Bftsu protocol for the peer
      * 
      * One round of communication looks as follows:
      * <ul>
@@ -88,7 +88,7 @@ public class BfwsiProtocolPeer extends BfwsiProtocol {
 	private synchronized void createInitialSharesMessage() {
 		logger.log(Level.INFO, "Creating message for first round (send initial shares)...");
 		inputPeer.generateInitialShares();
-		messageToSend = new BfwsiMessage(inputPeer.getMyPeerID(), myPeerIndex);
+		messageToSend = new BftsuMessage(inputPeer.getMyPeerID(), myPeerIndex);
 		messageToSend.setSenderIndex(myPeerIndex);
 		messageToSend.setTimeSlotCount(timeSlotCount);
 		messageToSend.setMetricCount(metricCount);
