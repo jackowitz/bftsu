@@ -64,8 +64,10 @@ public abstract class BftsuBase extends PrimitivesEnabledPeer {
 	/** number of Items to Read from the input File */
 	protected int itemsToRead = 0;
 	
-	/** Threshold for the threshold-set union */
+	/** threshold for the threshold-set union */
 	protected long threshold = 0;
+	/** structured or unstructered input data */
+	protected boolean isStructured = false;
 
 	
 	/** prefix of all bftsu protocol properties */
@@ -74,6 +76,7 @@ public abstract class BftsuBase extends PrimitivesEnabledPeer {
 	public static final String PROP_BLOOMF_SIZE = PROP_BLOOM_PREFIX + "size";
 	
 	public static final String PROP_BFTSU_THRESHOLD = "mpc.bftsu.threshold";
+	public static final String PROP_BFTSU_STRUCTURED = "mpc.bftsu.isstructured";
 	
 	
 	/**
@@ -124,6 +127,7 @@ public abstract class BftsuBase extends PrimitivesEnabledPeer {
         bloomFilterSize = Integer.valueOf(properties.getProperty(PROP_BLOOMF_SIZE));
         
         threshold = Long.valueOf(properties.getProperty(PROP_BFTSU_THRESHOLD));
+        isStructured = Boolean.valueOf(properties.getProperty(PROP_BFTSU_STRUCTURED));
       
 		
 		// output properties to log
@@ -140,6 +144,7 @@ public abstract class BftsuBase extends PrimitivesEnabledPeer {
 		logger.log(Level.INFO, "Items to read: " + itemsToRead);
 		logger.log(Level.INFO, "Number of hashfunctions: " + numberOfHashFunctions);
 		logger.log(Level.INFO, "Bloom filter size: " + bloomFilterSize);
+		logger.log(Level.INFO, "Data set is structured: " + isStructured);
 		
 	}
 
