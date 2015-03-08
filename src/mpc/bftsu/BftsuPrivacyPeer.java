@@ -403,7 +403,7 @@ public class BftsuPrivacyPeer extends BftsuBase {
 				dataIndex++;
 			}
 		}
-		if(!primitives.bfThresholdUnion(operationIDs[0], data, threshold, learnWeights)) {
+		if(!primitives.bfThresholdUnion(operationIDs[0], data, threshold, false)) {
 			Services.printVector("SEVERE: bfBftsu operation arguments are invalid: id=0; data: ", data[0], logger);
 		}
 		logger.log(Level.INFO, "thread " + Thread.currentThread().getId() + " started the "+operationIDs.length+" bftsu operations...");

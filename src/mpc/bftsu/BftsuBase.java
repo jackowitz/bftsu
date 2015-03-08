@@ -64,9 +64,8 @@ public abstract class BftsuBase extends PrimitivesEnabledPeer {
 	/** number of Items to Read from the input File */
 	protected int itemsToRead = 0;
 	
-	/** Thresholds for the threshold-set union */
+	/** Threshold for the threshold-set union */
 	protected long threshold = 0;
-	protected boolean learnWeights = false;
 
 	
 	/** prefix of all bftsu protocol properties */
