@@ -161,9 +161,9 @@ public class BftsuPeer extends BftsuBase {
 			FileReader fr = new FileReader(currentInputFile);
 			BufferedReader br = new BufferedReader(fr);
 
-			String adr = null;
-			while(null != (adr = br.readLine())){
-				bf.insert(adr);
+			String elem = null;
+			while(null != (elem = br.readLine())){
+				bf.insert(elem);
 			}
 			br.close();
 			fr.close();
@@ -280,32 +280,50 @@ public class BftsuPeer extends BftsuBase {
      */
 	protected void writeOutputToFile() throws Exception {
 		// store finalResult as a BloomFilter
-		BloomFilter bf = new BloomFilter(numberOfHashFunctions, finalResults, learnWeights);
+		BloomFilter bf = new BloomFilter(numberOfHashFunctions, finalResults, true);
 
 		// debug, use for short filters only!!!
 		//logger.log(Level.SEVERE,"final: "+bf.toString());
 		//logger.log(Level.SEVERE, "finalResults.length: "+finalResults.length);
 
+		FileReader fr = new FileReader(currentInputFile);
+		BufferedReader br = new BufferedReader(fr);
+
+		String elem = null;
+		while(null != (elem = br.readLine())){
+			// for each element in the input set, check if it is in the result
+			if(bf.check(elem)){
+				bf.insert(elem);
+			}
+		}
+		br.close();
+		fr.close();
+
+		// read through the file again to get the unique indices
+		fr = new FileReader(currentInputFile);
+		br = new BufferedReader(fr);
+
 		String fileName = outputFolder + "/bftsu_" + String.valueOf(getMyPeerID()).replace(":", "_") + "_round" 
 			+ currentTimeSlot + ".csv";
-		//bf.writeToFile(fileName);
 
 		FileWriter fw = new FileWriter(fileName);
 		BufferedWriter bw = new BufferedWriter(fw);
 
-		FileReader fr = new FileReader(currentInputFile);
-		BufferedReader br = new BufferedReader(fr);
-		
-		String adr = null;
-		while(null != (adr = br.readLine())){
-			// for each element in the input set, check if it is in the result
-			if(bf.check(adr)){
-				bw.write(adr);
+		elem = null;
+		while(null != (elem = br.readLine())){
+			if(bf.check(elem)){
+				bw.write(elem);
+				int [] indices = bf.getHash().hash(elem);
+				for(int i : indices){
+					if(bf.getArray()[i] == 2) // 1 from intersection, 1 from above
+						bw.write(";"+i);
+				}
 				bw.newLine();
 			}
 		}
 		br.close();
 		fr.close();
+
 		bw.close();
 		fw.close();
 	}	
