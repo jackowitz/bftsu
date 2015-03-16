@@ -281,27 +281,14 @@ public class BftsuPeer extends BftsuBase {
      */
 	protected void writeOutputToFile() throws Exception {
 		// store finalResult as a BloomFilter
-		BloomFilter bf = new BloomFilter(numberOfHashFunctions, finalResults, !isStructured);
+		BloomFilter bf = new BloomFilter(numberOfHashFunctions, finalResults, true);
 
 		// debug, use for short filters only!!!
 		//logger.log(Level.SEVERE,"final: "+bf.toString());
 		//logger.log(Level.SEVERE, "finalResults.length: "+finalResults.length);
 
-		if(isStructured) {
-			writeStructuredOutputToFile(bf);
-		} else {
-			writeUnstructuredOutputToFile(bf);
-		}
-	}
-
-	protected void writeStructuredOutputToFile(BloomFilter bf) throws Exception {
-		throw new UnsupportedOperationException();
-	}
-
-	protected void writeUnstructuredOutputToFile(BloomFilter bf) throws Exception {
-		if(!bf.isCounting()) {
-			throw new IllegalArgumentException("BloomFilter must be counting.");
-		}
+		String fileName = outputFolder + "/bftsu_" + String.valueOf(getMyPeerID()).replace(":", "_") + "_round" 
+			+ currentTimeSlot + ".csv";
 
 		// Read through the file once to check which private inputs are in
 		// the result set. We need to iterate again later, so we also cache
@@ -320,16 +307,13 @@ public class BftsuPeer extends BftsuBase {
 		br.close();
 		fr.close();
 
-		String fileName = outputFolder + "/bftsu_" + String.valueOf(getMyPeerID()).replace(":", "_") + "_round" 
-			+ currentTimeSlot + ".csv";
-
-		FileWriter fw = new FileWriter(fileName);
-		BufferedWriter bw = new BufferedWriter(fw);
-
 		// Every index for a result set element will be at least 1. Each
 		// of these elements should have at least one unique index to which
 		// only it hashes. Here we find such indices and write them to the
 		// output along with the element itself.
+		FileWriter fw = new FileWriter(fileName);
+		BufferedWriter bw = new BufferedWriter(fw);
+
 		for(String resultElem : elementCache){
 			bw.write(resultElem);
 			int [] indices = bf.getHash().hash(resultElem);
