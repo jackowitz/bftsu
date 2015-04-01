@@ -281,7 +281,7 @@ public class BftsuPeer extends BftsuBase {
      */
 	protected void writeOutputToFile() throws Exception {
 		// store finalResult as a BloomFilter
-		BloomFilter bf = new BloomFilter(numberOfHashFunctions, finalResults, true);
+		BloomFilter bf = new BloomFilter(numberOfHashFunctions, finalResults, false);
 
 		// debug, use for short filters only!!!
 		//logger.log(Level.SEVERE,"final: "+bf.toString());
@@ -290,42 +290,22 @@ public class BftsuPeer extends BftsuBase {
 		String fileName = outputFolder + "/bftsu_" + String.valueOf(getMyPeerID()).replace(":", "_") + "_round" 
 			+ currentTimeSlot + ".csv";
 
-		// Read through the file once to check which private inputs are in
-		// the result set. We need to iterate again later, so we also cache
-		// the result set elements during this pass.
-		ArrayList<String> elementCache = new ArrayList<String>();
+		FileWriter fw = new FileWriter(fileName);
+		BufferedWriter bw = new BufferedWriter(fw);
+
 		FileReader fr = new FileReader(currentInputFile);
 		BufferedReader br = new BufferedReader(fr);
 
 		String elem = null;
 		while(null != (elem = br.readLine())){
+			// for each element in the input set, check if it is in the result
 			if(bf.check(elem)){
-				bf.insert(elem);
-				elementCache.add(elem);
+				bw.write(elem);
+				bw.newLine();
 			}
 		}
 		br.close();
 		fr.close();
-
-		// Every index for a result set element will be at least 1. Each
-		// of these elements should have at least one unique index to which
-		// only it hashes. Here we find such indices and write them to the
-		// output along with the element itself.
-		FileWriter fw = new FileWriter(fileName);
-		BufferedWriter bw = new BufferedWriter(fw);
-
-		for(String resultElem : elementCache){
-			bw.write(resultElem);
-			int [] indices = bf.getHash().hash(resultElem);
-			for(int i : indices){
-				if(bf.getArray()[i] == 2)
-					bw.write(";"+i);
-			}
-			bw.newLine();
-		}
-		br.close();
-		fr.close();
-
 		bw.close();
 		fw.close();
 	}
